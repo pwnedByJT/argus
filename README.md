@@ -64,3 +64,12 @@ The webhook server accepts either a direct payload or a nested `all_fields` obje
 - The bot uses `discord.py` and Flask
 - `cogs/threat_intel.py` implements a daily RSS feed collector for threat intelligence posts
 - The bot dynamically loads all Python files in `cogs/` at startup
+
+## Architecture
+
+- The alert processing flow chart is available in `cogs/flowChart.mmd`
+- The diagram covers:
+  - Wazuh SIEM alert ingestion
+  - Flask webhook enrichment and threat scoring
+  - Discord alert card dispatch and analyst interaction
+  - Paramiko SSH firewall enforcement and automatic unblock lifecycle
