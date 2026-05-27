@@ -4,6 +4,9 @@
 # Python virtual environment
 venv/
 
+# Local nested repository
+wazuh-docker/
+
 # Python bytecode and cache
 __pycache__/
 *.pyc
