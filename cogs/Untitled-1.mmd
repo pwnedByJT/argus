@@ -1,0 +1,62 @@
+---
+id: 1ecfb690-f52e-4e0b-b5c1-882998f6f41b
+---
+flowchart TD
+    subgraph SIEM["SIEM Environment — Wazuh"]
+        A(["Wazuh SIEM · Anomaly Detected"])
+        B[/"HTTP POST · JSON Alert Payload"/]
+        A -->|"Brute force / File Read event"| B
+    end
+
+    subgraph FLASK["Flask Webhook API — Thread 1 · Port 5000"]
+        C["Flask Webhook · Receives POST /alert"]
+        D{"DLP Keyword Scan\n(PII / SSN)"}
+        E["AbuseIPDB API · OSINT Threat Score"]
+        F[/"Enriched Alert Payload"/]
+        G["asyncio.run_coroutine_threadsafe()\nCross-thread handoff"]
+        C --> D
+        D -->|"Scan alert description"| E
+        E -->|"Append threat score"| F
+        D --> F
+        F --> G
+    end
+
+    subgraph BOT["Discord Bot Engine — Thread 2 · asyncio Event Loop"]
+        H["Build Interactive UI View & Alert Card"]
+        I["WebSocket Dispatch to SOC Channel"]
+        J{{"Analyst Reviews Alert Card"}}
+        K["Dismiss · Disable UI\nLog as False Positive"]
+        L["Block IP Selected"]
+        M["asyncio.to_thread()\nParamiko SSH — off event loop"]
+        N["Background Task · asyncio.sleep(300s)"]
+        H --> I
+        I --> J
+        J -->|"Option A — False Positive"| K
+        J -->|"Option B — Block IP"| L
+        L --> M
+        L --> N
+    end
+
+    subgraph PI["Target Endpoint — Raspberry Pi"]
+        O["SSH Connection Established · Paramiko"]
+        P[/"Execute: sudo ufw deny from Attacker_IP"/]
+        Q["IP Blocked · Firewall Rule Active"]
+        R["Lifecycle Timer Expires · 300 s"]
+        S["SSH Reconnect · Paramiko"]
+        T[/"Execute: sudo ufw delete deny"/]
+        U["Block Lifted · Firewall Rule Removed"]
+        O --> P
+        P --> Q
+        R --> S
+        S --> T
+        T --> U
+    end
+
+    V["Receipt Posted to SOC Channel\nTemporary block confirmed lifted"]
+
+    B -->|"HTTP POST intercepted"| C
+    G -->|"Coroutine passed to bot event loop"| H
+    M -->|"SSH handoff — off event loop"| O
+    N -->|"Timer expires"| R
+    U --> V
+    V --> BOT
